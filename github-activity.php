@@ -15,7 +15,7 @@ EOL;
 
 // username
 if (!isset($argv[1])) {
-    echo 'Argument Invalid: Missing username' . PHP_EOL;
+    echo 'Argument Invalid: Missing username';
     exit(1);
 } else {
     $username = $argv[1];
@@ -107,4 +107,35 @@ foreach ($data as $event) {
             $created[$repoName][] = $ref;
         }
     }
+}
+
+// --------------------------  Visualização atividades -----------------------------------
+
+foreach ($created as $repoName => $refs) {
+    foreach ($refs as $ref) {
+        if ($ref === 'repository') {
+            echo " - Created repository $repoName\n";
+        } else {
+            echo " - Created branch $ref in $repoName\n";
+        }
+    }
+}
+
+foreach ($pushCount as $repoName => $count) {
+    echo " - Pushed $count commit(s) to $repoName\n";
+}
+
+foreach ($pullRequestCount as $repoName => $actions) {
+    foreach ($actions as $action => $count) {
+        echo " - " . ucfirst($action) . " $count pull request(s) in $repoName\n";
+    }
+}
+
+foreach ($starredRepos as $repo) {
+    echo " - Starred in $repo\n";
+}
+
+if ($typesFilter && $matchedEventCount === 0) {
+    echo "(Nenhuma atividade encontrada para o(s) tipo(s): " . implode(', ', $typesFilter) . ")\n";
+    echo "Digite --help para obter ajuda\n";
 }
