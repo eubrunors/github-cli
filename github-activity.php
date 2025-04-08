@@ -1,11 +1,32 @@
 <?php
 
+if (in_array('--help', $argv)) {
+    echo <<<EOL
+Uso:
+  php github-activity.php <username> [--type=PushEvent,CreateEvent]
+
+Opções:
+  --type=...       Filtra por tipos de eventos (ex: PushEvent,CreateEvent)
+  --help           Exibe esta mensagem
+
+EOL;
+    exit(0);
+}
+
 // username
 if (!isset($argv[1])) {
     echo 'Argument Invalid: Missing username' . PHP_EOL;
     exit(1);
 } else {
     $username = $argv[1];
+}
+
+// type event filter
+$typesFilter = null;
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--types=')) {
+        $typesFilter = explode(',', substr($arg, strlen('--types=')));
+    }
 }
 
 $url = "https://api.github.com/users/$username/events";
@@ -40,9 +61,15 @@ $pushCount = [];
 $pullRequestCount = [];
 $starredRepos = [];
 $created = [];
+$matchedEventCount = 0;
 
 foreach ($data as $event) {
     $repoName = $event['repo']['name'];
+
+    if ($typesFilter && !in_array($event['type'], $typesFilter)) {
+        continue;
+    }
+    $matchedEventCount++;
 
     if ($event['type'] === 'PushEvent') {
         if (!isset($pushCount[$repoName])) {
@@ -81,4 +108,3 @@ foreach ($data as $event) {
         }
     }
 }
-
